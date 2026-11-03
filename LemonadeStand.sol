@@ -13,8 +13,8 @@ interface lemonadeStand_interface {
 contract lemonadeStand is XRCSHARE{ 
     string public description;
     uint public editorToken;
-    //juice Glassses sold
-    uint public totalLemonadeSold;
+    //token id of the sales counter the stand mints to itself
+    uint public lemonadeToken;
 
     uint public price = 1000000000000000000;
     bool public openStatus = false;
@@ -25,7 +25,7 @@ contract lemonadeStand is XRCSHARE{
     constructor(string memory _name,string memory _description,string memory _symbol,uint _totalSupply,string memory _URI)XRCSHARE(_name,_symbol,_totalSupply,_URI){
         description = _description;
         editorToken = _totalSupply +1;
-        totalLemonadeSold = _totalSupply + 2;
+        lemonadeToken = _totalSupply + 2;
         //------------------- Token 2
         _mint(msg.sender,editorToken,3,"");
     }
@@ -44,7 +44,7 @@ contract lemonadeStand is XRCSHARE{
         require(_amount > 0, "buy at least one glass");
         uint total_price = price*_amount;
         require(msg.value >= total_price, "need more funds");
-        _mint(address(this),totalLemonadeSold,_amount,"");
+        _mint(address(this),lemonadeToken,_amount,"");
         redirectValue(total_price);
 
         emit sold("more lemonade sold", _amount);
@@ -68,9 +68,13 @@ contract lemonadeStand is XRCSHARE{
         return true;
     }
 
+    //juice Glassses sold
+    function totalLemonadeSold() public view returns(uint){
+        return balanceOf(address(this),lemonadeToken);
+    }
     //the stand only accepts the sales counter it mints to itself, so nothing else can get stuck here
     function onERC1155Received(address, address _from, uint256 _id, uint256, bytes memory) public virtual returns (bytes4) {
-        require(msg.sender == address(this) && _from == address(0) && _id == totalLemonadeSold, "the stand does not accept tokens");
+        require(msg.sender == address(this) && _from == address(0) && _id == lemonadeToken, "the stand does not accept tokens");
         return this.onERC1155Received.selector;
     }
 }

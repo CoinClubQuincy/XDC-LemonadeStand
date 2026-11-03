@@ -47,7 +47,8 @@ contract LemonadeStandTest is Test {
         vm.prank(buyer);
         stand.GlassOfLemonade{value: 2 ether}(2);
         assertEq(stand.viewAccount(0), 0.2 ether);
-        assertEq(stand.balanceOf(address(stand), stand.totalLemonadeSold()), 2);
+        assertEq(stand.balanceOf(address(stand), stand.lemonadeToken()), 2);
+        assertEq(stand.totalLemonadeSold(), 2);
         vm.prank(bob);
         stand.redeem();
         assertEq(bob.balance, 0.2 ether);
@@ -90,7 +91,8 @@ contract LemonadeStandTest is Test {
         ReentrantBuyer b = new ReentrantBuyer();
         vm.deal(address(b), 5 ether);
         b.buy(stand);
-        assertEq(stand.balanceOf(address(stand), stand.totalLemonadeSold()), 2);
+        assertEq(stand.balanceOf(address(stand), stand.lemonadeToken()), 2);
+        assertEq(stand.totalLemonadeSold(), 2);
         assertEq(address(stand).balance, 2 ether);
         assertEq(address(b).balance, 3 ether);
     }

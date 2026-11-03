@@ -71,6 +71,7 @@ Contracts already deployed are unaffected and keep the old behaviour.
 
 - `SHARE.sol` was updated from XRC-SHARES. Payments no longer write to every share, and a failed payout reverts.
 - The refund now happens last and uses a checked `call`, so a buyer contract needing more than 2,300 gas can receive it.
+- `totalLemonadeSold` now returns the number of glasses sold. It returned the token ID of the sales counter, which is now `lemonadeToken`.
 - Buying zero glasses is refused.
 - The stand accepts only its own sales counter token, so other tokens cannot get stuck in it. `onERC721Received` and `onERC1155BatchReceived` were removed.
 - The `hardhat/console.sol` debug import was removed, so the contract compiles without Hardhat.
