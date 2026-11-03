@@ -103,8 +103,9 @@ contract LemonadeStandTest is Test {
 
     function test_EditorKeysDoNotEarnDividends() public {
         open(1 ether);
+        uint editorKey = stand.editorToken();
         vm.prank(alice);
-        stand.safeTransferFrom(alice, buyer, stand.editorToken(), 1, "");
+        stand.safeTransferFrom(alice, buyer, editorKey, 1, "");
         vm.startPrank(buyer);
         stand.GlassOfLemonade{value: 1 ether}(1);
         vm.expectRevert("only token holders can access");

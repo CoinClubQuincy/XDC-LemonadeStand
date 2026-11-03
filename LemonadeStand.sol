@@ -69,8 +69,8 @@ contract lemonadeStand is XRCSHARE{
     }
 
     //the stand only accepts the sales counter it mints to itself, so nothing else can get stuck here
-    function onERC1155Received(address _operator, address, uint256 _id, uint256, bytes memory) public virtual returns (bytes4) {
-        require(_operator == address(this) && _id == totalLemonadeSold, "the stand does not accept tokens");
+    function onERC1155Received(address, address _from, uint256 _id, uint256, bytes memory) public virtual returns (bytes4) {
+        require(msg.sender == address(this) && _from == address(0) && _id == totalLemonadeSold, "the stand does not accept tokens");
         return this.onERC1155Received.selector;
     }
 }
