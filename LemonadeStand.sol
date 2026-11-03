@@ -4,7 +4,6 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "./SHARE.sol";
-import "hardhat/console.sol";
 
 interface lemonadeStand_interface {
     function GlassOfLemonade(uint _amount)external payable returns(bool);
@@ -27,7 +26,6 @@ contract lemonadeStand is XRCSHARE{
         description = _description;
         editorToken = _totalSupply +1;
         totalLemonadeSold = _totalSupply + 2;
-        console.log(address(this));
         //------------------- Token 2
         _mint(msg.sender,editorToken,3,"");
     }
@@ -43,22 +41,23 @@ contract lemonadeStand is XRCSHARE{
 
     //------------------- Token 3
     function GlassOfLemonade(uint _amount)public payable status returns(bool){
+        require(_amount > 0, "buy at least one glass");
         uint total_price = price*_amount;
         require(msg.value >= total_price, "need more funds");
         _mint(address(this),totalLemonadeSold,_amount,"");
-        uint total = refund(payable(msg.sender),total_price,msg.value);
         redirectValue(total_price);
 
         emit sold("more lemonade sold", _amount);
+        //refund last, once the sale is fully recorded
+        refund(payable(msg.sender),msg.value - total_price);
         return true;
     }
 
-    function refund(address payable _buyer, uint _total,uint _amount)internal returns(uint) {
-        if(_amount > _total){
-            _buyer.transfer(_amount - _total);
-            return (_amount - _total);
+    function refund(address payable _buyer, uint _extra)internal{
+        if(_extra > 0){
+            (bool success, ) = _buyer.call{value: _extra}("");
+            require(success, "refund failed");
         }
-        return _amount;
     }
 
     function edit(string memory _description, uint _price, bool _OpenStatus)public OnlyEditor returns(bool){
@@ -69,14 +68,9 @@ contract lemonadeStand is XRCSHARE{
         return true;
     }
 
-        //ERC1155Received fuctions
-    function onERC1155Received(address, address, uint256, uint256, bytes memory) public virtual returns (bytes4) {
+    //the stand only accepts the sales counter it mints to itself, so nothing else can get stuck here
+    function onERC1155Received(address _operator, address, uint256 _id, uint256, bytes memory) public virtual returns (bytes4) {
+        require(_operator == address(this) && _id == totalLemonadeSold, "the stand does not accept tokens");
         return this.onERC1155Received.selector;
-    }
-    function onERC1155BatchReceived(address, address, uint256[] memory, uint256[] memory, bytes memory) public virtual returns (bytes4) {
-        return this.onERC1155BatchReceived.selector;
-    }
-    function onERC721Received(address, address, uint256, bytes memory) public virtual returns (bytes4) {
-        return this.onERC721Received.selector;
     }
 }

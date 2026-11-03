@@ -8,4 +8,4 @@ solc = "0.8.19"
 evm_version = "paris"
 optimizer = true
 skip = ["lib/**"]
-remappings = ["@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/", "forge-std/=lib/forge-std/src/", "hardhat/=lib/forge-std/src/"]
+remappings = ["@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/", "forge-std/=lib/forge-std/src/"]

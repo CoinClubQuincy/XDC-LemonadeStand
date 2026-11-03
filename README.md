@@ -14,7 +14,7 @@
 Customers buy lemonade from a contract, and every sale is split among the stand's shareholders. It's the smallest complete example of the [XRC-SHARES](https://github.com/CoinClubQuincy/XRC-SHARES) pattern, made for a developer workshop.
 
 > [!NOTE]
-> This is teaching code. It has not been audited and is not meant for production. It carries the same `SHARE.sol` limits listed in [XRC-SHARES](https://github.com/CoinClubQuincy/XRC-SHARES#known-issues).
+> This is teaching code. It has not been audited and is not meant for production. `SHARE.sol` is the same file as in [XRC-SHARES](https://github.com/CoinClubQuincy/XRC-SHARES#known-issues), with the same known limits.
 
 ## How it works
 
@@ -23,13 +23,13 @@ flowchart LR
     E[Editor token holder] -->|edit: price and open| L[lemonadeStand]
     C[Customer] -->|GlassOfLemonade| L
     L -->|refunds overpayment| C
-    L -->|splits the sale| A[Share accounts]
+    L -->|splits the sale| A[Running total per share]
     A -->|redeem| H[Shareholders]
 ```
 
 | File | Role |
 | --- | --- |
-| [`SHARE.sol`](SHARE.sol) | Mints up to 1,000 shares and credits each share's account when money arrives |
+| [`SHARE.sol`](SHARE.sol) | Mints up to 1,000 shares and credits all of them when money arrives |
 | [`LemonadeStand.sol`](LemonadeStand.sol) | Adds 3 editor tokens, a price, an open or closed state and a sales counter |
 
 | Function | Who | What it does |
@@ -59,11 +59,21 @@ git clone --depth 1 -b v1.9.7 https://github.com/foundry-rs/forge-std lib/forge-
 forge test
 ```
 
-You need [Foundry](https://getfoundry.sh). Tests named `test_KnownIssue_*` pass because they pin a defect, so a passing run does not mean the defect is gone.
+You need [Foundry](https://getfoundry.sh).
 
 ## What is tested
 
-[`test/foundry/LemonadeStand.t.sol`](test/foundry/LemonadeStand.t.sol) has 5 tests and runs in CI on every push. They cover the closed state, editor access, underpayment, overpayment refunds, and a sale being split and redeemed. It has not been run on a real network or audited.
+[`test/foundry/LemonadeStand.t.sol`](test/foundry/LemonadeStand.t.sol) has 12 tests, including one fuzz test, and runs in CI on every push. They cover the closed state, editor access, underpayment, zero purchases, refunds to any buyer contract, a buyer reentering during a refund, refusing outside tokens, and a sale being split and redeemed. It has not been run on a real network or audited.
+
+## Changes from earlier versions
+
+Contracts already deployed are unaffected and keep the old behaviour.
+
+- `SHARE.sol` was updated from XRC-SHARES. Payments no longer write to every share, and a failed payout reverts.
+- The refund now happens last and uses a checked `call`, so a buyer contract needing more than 2,300 gas can receive it.
+- Buying zero glasses is refused.
+- The stand accepts only its own sales counter token, so other tokens cannot get stuck in it. `onERC721Received` and `onERC1155BatchReceived` were removed.
+- The `hardhat/console.sol` debug import was removed, so the contract compiles without Hardhat.
 
 <details>
 <summary><strong>More XDC projects</strong></summary>
